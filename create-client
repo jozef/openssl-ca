@@ -1,0 +1,33 @@
+#!/bin/bash -xe
+
+BASE_PATH=`dirname $0`
+
+# load configuration
+. $BASE_PATH/cfg
+
+
+umask 0077
+
+if [ "$1" ]; then
+        FILE="client/$1"
+else
+	echo "Usage: $0 certificate_name"
+	exit 1;
+fi
+
+
+# check if we are not going to overwrite a key
+if [ -f ${FILE}.key ]; then
+    echo "key file" ${FILE}.key "exists!"
+    exit 1;
+fi
+
+openssl genrsa -out ${FILE}.key 2048
+openssl req -new -key ${FILE}.key -out ${FILE}.csr
+openssl x509 -req -in ${FILE}.csr -extfile ${EXT_FILE} -extensions usr_cert \
+        -days $CLIENT_EXPIRATION_DAYS -CA $CACRT -CAkey $CAKEY -out ${FILE}.crt \
+        -CAcreateserial \
+        -CAserial ${CA}.srl \
+	&& rm -f ${FILE}.csr \
+	&& chmod 644 ${FILE}.crt
+

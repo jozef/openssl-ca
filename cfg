@@ -1,0 +1,12 @@
+#!/bin/bash
+
+CA=openssl-demo-ca
+
+CA_EXPIRATION_DAYS=5500
+SERVER_EXPIRATION_DAYS=730
+CLIENT_EXPIRATION_DAYS=730
+
+CACRT=${BASE_PATH}/${CA}.crt
+CAKEY=${BASE_PATH}/${CA}.key
+EXT_FILE=${BASE_PATH}/openssl.cnf
+CRL=${BASE_PATH}/${CA}-crl.pem

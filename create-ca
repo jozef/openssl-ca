@@ -1,0 +1,26 @@
+#!/bin/bash -xe
+
+BASE_PATH=`dirname $0`
+
+# load configuration
+. $BASE_PATH/cfg
+
+# check if the default ca name was changed
+if [ "${CA}" == "your-ca-name" ]; then
+    echo "please set your CA name in" $BASE_PATH/cfg
+    exit 1;
+fi
+
+# check if we are not going to overwrite a key
+if [ -f $BASE_PATH/${CA}.key ]; then
+    echo "key file" $BASE_PATH/${CA}.key "exists!"
+    exit 1;
+fi
+
+openssl genrsa -out $BASE_PATH/${CA}.key 4096
+openssl req -new -key $BASE_PATH/${CA}.key -out $BASE_PATH/${CA}.csr
+openssl x509 -req -in $BASE_PATH/${CA}.csr \
+    -extfile ${EXT_FILE} -extensions v3_ca \
+    -signkey $BASE_PATH/${CA}.key \
+    -days $CA_EXPIRATION_DAYS \
+    -out $BASE_PATH/${CA}.crt

@@ -1,0 +1,26 @@
+#!/bin/sh -xe
+
+# revoke a certificate, regenerate CRL,
+# and verify revocation
+
+BASE_PATH=`dirname $0`
+
+# load configuration
+. $BASE_PATH/cfg
+
+REVOKEPEM=$1.rpem
+
+if test $# -ne 1; then
+        echo "usage: revoke-full <name>";
+        exit 1
+fi
+
+openssl ca -revoke $1.crt -config $EXT_FILE -keyfile $BASE_PATH/${CA}.key -cert $BASE_PATH/${CA}.crt
+
+# generate a new CRL
+openssl ca -gencrl -out $CRL -config $EXT_FILE -keyfile $BASE_PATH/${CA}.key -cert $BASE_PATH/${CA}.crt
+cat $CACRT $CRL > $REVOKEPEM
+rm $CRL
+
+# verify the revocation
+openssl verify -CAfile $REVOKEPEM -crl_check $1.crt
